@@ -1,0 +1,7 @@
+#+TITLE: grorg
+
+A command line interface for navigate and querying org mode files
+(grep-org, or grorg). It's main advantage over org mode tools is it's
+understanding of the org mode syntax, which enables querying that
+might be difficult in shell scripts (such as listing all immediate
+children of a given header).
