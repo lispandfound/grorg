@@ -1,0 +1,108 @@
+#+TITLE: Roadmap
+
+* Must Haves
+
+This tool must provide an elegant way of selecting a header (or group
+of headers) in an org mode document and query information about them.
+
+** PROJ Write an XPath-like language for taking sub-trees of a full org document
+
+The XPath subset should be capable of the following:
+
+- Absolute sub-tree selection
+- Relative sub-tree selection
+- Regex sub-tree selection
+
+A path can select multiple nodes at once, either through the child of
+a specific node or through a portion of path matching multiple nodes
+simultaneously
+
+*** Examples
+Example org document structure:
+#+BEGIN_QUOTE
+- Header 1
+  - Header 2
+  - Header 3
+- Header 4
+  - Rel header
+    - Sub header
+#+END_QUOTE
+
+**** Absolute sub-tree selection
+Using the above document structure, an example of a valid selector
+would be =/Header 1=, which selects the sub-tree of all items under
+=Header 1=.
+
+Selector:
+
+#+BEGIN_QUOTE
+/Header 1
+#+END_QUOTE
+
+Output:
+
+#+BEGIN_QUOTE
+- Header 1
+  - Header 2
+  - Header 3
+#+END_QUOTE
+
+**** Relative sub-tree selection
+Using the above document structure, an example of a valid /relative/
+selector would be =//Rel header=. This selector selects the sub-tree of
+all items under =Rel header= regardless of where =Rel header= is nested in
+the tree structure.
+
+Selector:
+
+#+BEGIN_QUOTE
+//Rel header
+#+END_QUOTE
+
+Output:
+#+BEGIN_QUOTE
+- Rel header
+  - Sub header
+#+END_QUOTE
+
+**** Regex sub-tree selection
+
+Paths can use regular expressions to find sub-tree, as an extension of
+both relative and absolute paths. An example of a regular expression
+selector would be =//Header .+=. This selects all the sub-tree of all
+headers whose text matches the regular expression =Header .+=.
+
+Selector:
+
+#+BEGIN_QUOTE
+//Header .+
+#+END_QUOTE
+
+Output:
+
+#+BEGIN_QUOTE
+- Header 1
+  - Header 2
+  - Header 3
+- Header 4
+  - Rel header
+    - Sub header
+#+END_QUOTE
+
+In this case because =Header 1= and =Header 4= both match this regular
+expression, the result is the entire document. Note that the search
+does not continue down nodes that have already been shown to match the
+expression.
+
+*** TODO Implement absolute sub-tree selection
+*** TODO Implement relative sub-tree selection
+*** TODO Implement regex sub-tree selection
+
+** PROJ Provide relevant querying tools
+*** TODO Regex of header's title
+*** TODO Regex of header's children
+- [ ] Recursively
+*** TODO Tag matching
+*** TODO todo item status
+*** TODO Property key value search
+* Nice-to-haves
