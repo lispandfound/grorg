@@ -1,5 +1,25 @@
+from collections import deque
 from PyOrgMode import PyOrgMode
 import re
+
+
+def find_headers_matching(node, predicate, recursive=False):
+    """ Return a list of all sub-nodes of node (or list of nodes) matching a predicate.
+    If the recursive flag is set, consider all sub-nodes recursively"""
+    if type(node) == list:
+        node_stack = deque(node)
+    else:
+        node_stack = deque(node.content)
+    result = []
+    while len(node_stack) > 0:
+        child = node_stack.popleft()
+        if not Selector._header(child):
+            continue
+        elif predicate(child):
+            result.append(child)
+        elif recursive:
+            node_stack.extend(child.content)
+    return result
 
 
 class Selector:
@@ -27,20 +47,6 @@ class Selector:
                 children.extend(node.content)
         return children
 
-    def _find_headers_matching(self, considered_nodes, part, recursive=False):
-        """ Return a list of headers matching the regex part. """
-        considering_nodes = considered_nodes[:]
-        result = []
-        while len(considering_nodes) > 0:
-            node = considering_nodes.pop()
-            if not Selector._header(node):
-                continue
-            elif part.match(node.heading):
-                result.append(node)
-            elif recursive:
-                considering_nodes.extend(node.content)
-        return result
-
     def apply(self, document):
         """ Apply a selector to an org mode document. """
         considered_nodes = [document.root]
@@ -48,7 +54,10 @@ class Selector:
 
             considered_nodes = Selector._expand(considered_nodes)
 
-            considered_nodes = self._find_headers_matching(considered_nodes,
-                                                           part,
-                                                           recursive=self.recursive)
+            def predicate(node):
+                re.match(part, node.heading)
+
+            considered_nodes = find_headers_matching(considered_nodes,
+                                                     predicate,
+                                                     recursive=self.recursive)
         return considered_nodes
