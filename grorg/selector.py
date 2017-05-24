@@ -15,10 +15,12 @@ class Selector:
 
     @staticmethod
     def _header(node):
+        """ Returns True if given node is a header node. """
         return type(node) == PyOrgMode.OrgNode.Element
 
     @staticmethod
     def _expand(nodes):
+        """ Return a list containing all the children of every node in nodes. """
         children = []
         for node in nodes:
             if Selector._header(node):
