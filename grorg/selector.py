@@ -59,7 +59,7 @@ class Selector:
             considered_nodes = Selector._expand(considered_nodes)
 
             def predicate(node):
-                re.match(part, node.heading)
+                return re.match(part, node.heading)
 
             considered_nodes = find_headers_matching(considered_nodes,
                                                      predicate,
