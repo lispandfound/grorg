@@ -49,18 +49,21 @@ class TestPropertyFilter(unittest.TestCase):
 
 
 class TestRelationships(unittest.TestCase):
-    def setUp(self):
-        self.test_cases = {
+
+    def test_relationships(self):
+
+        test_cases = {
             ('=Hello', 'Hello'): True,
             ('>3', '4'): True,
             ('!>3', '4'): False,
             ('=.at', 'Cat'): True,
-            ('}test', frozenset(set(['test']))): True,
-            ('!}a', frozenset(set(['b', 'c', 'd']))): True
+            ('{test', 'test'): True,
+            ('!{a;b;c;d', 'e'): True
         }
 
-    def test_relationships(self):
-        for relationship_test, expected_result in self.test_cases.items():
+        for relationship_test, expected_result in test_cases.items():
             relationship_string, argument = relationship_test
             relationship = property_filter.relationship_from(relationship_string)
-            self.assertEqual(relationship(argument), expected_result)
+            value = relationship(argument)
+            print(f'{relationship_string} held {value} when called with {argument}')
+            self.assertEqual(value, expected_result)

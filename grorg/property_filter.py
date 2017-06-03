@@ -8,7 +8,7 @@ def relationship_from(relationship_string):
     - '=', equal (also may include regex).
     - '>', greater than.
     - '<', less than.
-    - '}', membership (of lists or sets).
+    - '{', membership (of lists or sets).
     All relationships can be inverted with a '!'
     """
     invert_relationship = False
@@ -17,26 +17,30 @@ def relationship_from(relationship_string):
         relationship_string = relationship_string[1:]
 
     relationship_operator = relationship_string[0]
-    relationship_rhs = relationship_string[1:]
+    relationship_rhs = relationship_string[1:].split(';')
 
     def gt_mapping(lhs):
-        return int(lhs) > int(relationship_rhs)
+        return int(lhs) > int(relationship_rhs[0])
 
     def lt_mapping(lhs):
         return not gt_mapping(lhs)
 
-    def membership_mapping(rhs):
-        return relationship_rhs in rhs
+    def membership_mapping(lhs):
+        relationship_set = set(relationship_rhs)
+        if type(lhs) == list:
+            return set(lhs) & relationship_set
+        else:
+            return lhs in set(relationship_rhs)
 
     def equal_mapping(lhs):
-        relationship_rx = re.compile(relationship_rhs)
+        relationship_rx = re.compile(relationship_rhs[0])
         return relationship_rx.match(lhs) is not None
 
     relationship_mapping = {
         '=': equal_mapping,
         '>': gt_mapping,
         '<': lt_mapping,
-        '}': membership_mapping
+        '{': membership_mapping
     }
 
     mapping = relationship_mapping[relationship_operator]
