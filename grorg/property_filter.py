@@ -18,6 +18,7 @@ def relationship_from(relationship_string):
 
     relationship_operator = relationship_string[0]
     relationship_rhs = relationship_string[1:].split(';')
+    relationship_rx = re.compile(relationship_rhs[0])
 
     def gt_mapping(lhs):
         return int(lhs) > int(relationship_rhs[0])
@@ -30,10 +31,10 @@ def relationship_from(relationship_string):
         if type(lhs) == list:
             return set(lhs) & relationship_set
         else:
-            return lhs in set(relationship_rhs)
+            return lhs in relationship_set
 
     def equal_mapping(lhs):
-        relationship_rx = re.compile(relationship_rhs[0])
+        # return relationship_rhs == lhs
         return relationship_rx.match(lhs) is not None
 
     relationship_mapping = {

@@ -57,7 +57,6 @@ class TestRelationships(unittest.TestCase):
             ('>3', '4'): True,
             ('!>3', '4'): False,
             ('=.at', 'Cat'): True,
-            ('{test', 'test'): True,
             ('!{a;b;c;d', 'e'): True
         }
 
@@ -67,3 +66,6 @@ class TestRelationships(unittest.TestCase):
             value = relationship(argument)
             print(f'{relationship_string} held {value} when called with {argument}')
             self.assertEqual(value, expected_result)
+
+        relationship = property_filter.relationship_from('{test')
+        self.assertTrue(relationship(['test']))
