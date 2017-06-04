@@ -13,55 +13,64 @@ def find_headers_matching(node, predicate, recursive=False):
         node_stack = deque(node.content)
     result = []
     while len(node_stack) > 0:
-        child = node_stack.popleft()
-        if not Selector._header(child):
+        child = node_stack.pop()
+        if not header(child):
             continue
         elif predicate(child):
             result.append(child)
-        elif recursive:
-            node_stack.extend(child.content)
+        else:
+            node_stack.extendleft(child.content)
     return result
 
 
-class Selector:
-    """ Class containing a path that specifies how to navigate the
+def header(node):
+    """ Returns True if given node is a header node. """
+    return type(node) == PyOrgMode.OrgNode.Element
+
+
+def expand(nodes, recursive=False):
+    """ Return a list containing all the children of every node in
+    nodes. """
+    result = []
+    node_queue = deque(nodes)
+
+    while len(node_queue) > 0:
+        node = node_queue.popleft()
+        if not header(node):
+            continue
+        elif recursive:
+            node_queue.extendleft(reversed(node.content))
+        result.append(node)
+    return result
+
+
+def parse_selector(selector):
+    """ Parse a document selector from a given string.
+    Selectors are a path that specifies how to navigate the
     org-mode document. """
+    recursive = False
 
-    def __init__(self, selector):
-        """ Parse a document selector from a given string.
-        Selectors are a path that specifies how to navigate the
-        org-mode document. """
-        self.recursive = False
-        if selector[:2] == '//':
-            self.recursive = True
-        self.path = [re.compile(part) for part in selector.strip('/').split('/')]
+    if selector[:2] == '//':
+        recursive = True
 
-    @staticmethod
-    def _header(node):
-        """ Returns True if given node is a header node. """
-        return type(node) == PyOrgMode.OrgNode.Element
+    path = [re.compile(part) for part in selector.strip('/').split('/')]
+    return path, recursive
 
-    @staticmethod
-    def _expand(nodes):
-        """ Return a list containing all the children of every node in
-        nodes. """
-        children = []
-        for node in nodes:
-            if Selector._header(node):
-                children.extend(node.content)
-        return children
 
-    def apply(self, document):
-        """ Apply a selector to an org mode document. """
-        considered_nodes = [document.root]
-        for part in self.path:
+def apply_selector(selector, document):
+    """ Apply a selector to an org mode document. """
 
-            considered_nodes = Selector._expand(considered_nodes)
+    path, recursive = parse_selector(selector)
 
-            def predicate(node):
-                return re.match(part, node.heading)
+    considered_nodes = [document.root]
+    for part in path:
 
-            considered_nodes = find_headers_matching(considered_nodes,
-                                                     predicate,
-                                                     recursive=self.recursive)
-        return considered_nodes
+        considered_nodes = expand(considered_nodes)
+
+        def predicate(node):
+            return re.match(part, node.heading)
+
+        considered_nodes = find_headers_matching(considered_nodes,
+                                                 predicate,
+                                                 recursive=recursive)
+    return considered_nodes
