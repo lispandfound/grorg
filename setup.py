@@ -9,6 +9,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        grorg=grorg:cli
+        grorg=main:cli
     ''',
 )
