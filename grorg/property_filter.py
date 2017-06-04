@@ -34,7 +34,6 @@ def relationship_from(relationship_string):
             return lhs in relationship_set
 
     def equal_mapping(lhs):
-        # return relationship_rhs == lhs
         return relationship_rx.match(lhs) is not None
 
     relationship_mapping = {
