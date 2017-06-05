@@ -1,6 +1,6 @@
 from PyOrgMode import PyOrgMode
 import re
-import selector
+from grorg import selector
 import unittest
 
 
