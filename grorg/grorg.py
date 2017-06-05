@@ -32,14 +32,17 @@ class FilterSetParamType(click.ParamType):
 
 @click.argument('org_file', type=click.File('r'))
 @click.argument('org_selector')
-@click.option('--filter', type=FilterSetParamType())
-@click.option('--content', type=bool)
-@click.option('--todo-keywords')
-@click.option('--done-keywords')
+@click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.')
+@click.option('--content', type=bool, help='Print the content of selected nodes (their text and children).')
+@click.option('--todo-keywords', help='Add extra keywords that are recognized as todo items.')
+@click.option('--done-keywords', help='Add extra keywords that are recognized as done items.')
 @click.command()
 def cli(org_file, org_selector='', filter=None, content=None,
         todo_keywords=None, done_keywords=None):
-    """ Test documentation """
+    """ grorg, grep for org-mode.\n
+    Search all headings selected by ORG_SELECTOR in the file
+    ORG_FILE. Use the --filter option to filter by specific properties
+    or pipe to grep. """
 
     org_document = PyOrgMode.OrgDataStructure()
 
