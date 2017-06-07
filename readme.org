@@ -30,18 +30,29 @@ It should print a list of every header in your document.
 #+BEGIN_QUOTE
 Usage: grorg [OPTIONS] ORG_SELECTOR ORG_FILE
 
+
   grorg, grep for org-mode.
+
 
   Search all headings selected by ORG_SELECTOR in the file ORG_FILE. Use the
   --filter option to filter by specific properties or pipe to grep.
 
+
 Options:
-  --done-keywords TEXT  Add extra keywords that are recognized as done items.
-  --todo-keywords TEXT  Add extra keywords that are recognized as todo items.
-  --content BOOLEAN     Print the content of selected nodes (their text and
-                        children).
+
+  --done-keywords TEXT  Add extra keywords that are recognized as done
+  items.
+
+  --todo-keywords TEXT  Add extra keywords that are recognized as todo
+  items.
+
+  --content BOOLEAN     Print the content of selected nodes (their
+  text and children).
+
   --filter FILTER       Filters to apply to selected nodes.
+
   --help                Show this message and exit.
+
 #+END_QUOTE
 
 ** Selector
