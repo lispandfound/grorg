@@ -55,12 +55,12 @@ Options:
 
 #+END_QUOTE
 
-** Selector
+** Selectors
 A selector is a path describing how grorg should traverse your org
 mode document. A '/' separates a path like a normal unix
 path. Selectors aren't exactly like paths though, they have a few
 extra features.
-
+*** Absolute Selectors
 #+BEGIN_EXAMPLE
 /Tasks
 #+END_EXAMPLE
@@ -76,7 +76,7 @@ document outline below.
 - Notes
  - Sub note
 #+END_EXAMPLE
-
+*** Relative Selectors
 #+BEGIN_EXAMPLE
 //Sub note
 #+END_EXAMPLE
@@ -93,7 +93,7 @@ Selectors can have regular expressions. We've been using them all
 along, just without realizing it. In this case it starts from the
 root and descends into nodes matching the regex =(N|T).*=. You can
 combine this with relative selectors for even more power.
-** Filter
+** Filters
 
 Filters can be thought of as a secondary selector. They give you
 access to properties of an org mode header, and let you filter them.
@@ -110,6 +110,8 @@ The basic syntax for a relationship looks like this:
 There are different types of relationships that can be represented
 with grorg. The relationship operator changes the type of relationship.
 
+Relationship operators:
+
 - = :: The '=' operator denotes equality.
 - ~ :: The '~' operator matches the property with a regular
        expression.
@@ -119,8 +121,8 @@ with grorg. The relationship operator changes the type of relationship.
        intersection with the set constructed of the value.
 
 A value is either a string, int, or list (set). This value is enforced
-by the relationship. So any value passed to '>' or '<' is presumed to
-be an integer, while any value passed to '~' is assumed to be a
+by the relationship. So any value passed to =>= or =<= is presumed to
+be an integer, while any value passed to =~= is assumed to be a
 string. A list is explicitly constructed by having multiple values
 split by ';'.
 
@@ -133,9 +135,9 @@ a;list;of;values
 
 Putting this together we can construct some relationships for the
 headings we want to filter. If we want only headings with a todo
-status of 'TODO', we could do this by using the filter 'todo=TODO'. If
-we wanted all headings with either 'TODO' or 'DONE' we could use
-'todo&TODO;DONE'.
+status of =TODO=, we could do this by using the filter =todo=TODO=. If
+we wanted all headings with either =TODO= or =DONE= we could use
+=todo&TODO;DONE=.
 
 Relationships are chained together with ',' and passed to the =--filter=
 argument.
@@ -143,6 +145,6 @@ argument.
 Example usage:
 
 #+BEGIN_SRC shell
-grorg '/Tasks' --filter 'todo=TODO'
+$ grorg '/Tasks' --filter 'todo=TODO'
 # Select all todo items under /Tasks that have a todo state of TODO
 #+END_SRC
