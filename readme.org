@@ -120,7 +120,7 @@ Relationship operators:
 - & :: '&' denotes the the property (taken as a set) has an
        intersection with the set constructed of the value.
 
-A value is either a string, int, or list (set). This value is enforced
+A value is either a string, int, or list (set). The value's type is enforced
 by the relationship. So any value passed to =>= or =<= is presumed to
 be an integer, while any value passed to =~= is assumed to be a
 string. A list is explicitly constructed by having multiple values
