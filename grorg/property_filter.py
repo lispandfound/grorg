@@ -5,10 +5,11 @@ def relationship_from(relationship_string):
     """ Build a relationship (an expression of some (dis)similarity
     between two values) from a string.
     Relationships include:
-    - '=', equal (also may include regex).
+    - '=', equal.
+    - '~', regex matching.
     - '>', greater than.
     - '<', less than.
-    - '{', membership (of lists or sets).
+    - '&', membership (of lists or sets).
     All relationships can be inverted with a '!'
     """
     invert_relationship = False
@@ -34,13 +35,17 @@ def relationship_from(relationship_string):
             return lhs in relationship_set
 
     def equal_mapping(lhs):
+        return str(lhs) == relationship_rhs[0]
+
+    def regex_mapping(lhs):
         return relationship_rx.match(lhs) is not None
 
     relationship_mapping = {
         '=': equal_mapping,
         '>': gt_mapping,
         '<': lt_mapping,
-        '{': membership_mapping
+        '&': membership_mapping,
+        '~': regex_mapping
     }
 
     mapping = relationship_mapping[relationship_operator]

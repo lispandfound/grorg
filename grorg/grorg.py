@@ -3,7 +3,7 @@ from PyOrgMode import PyOrgMode
 import click
 from grorg import selector, property_filter
 
-KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|<|{)(?P<value>.*)?$')
+KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|<|{|~|&)(?P<value>.*)?$')
 
 
 class FilterSetParamType(click.ParamType):
