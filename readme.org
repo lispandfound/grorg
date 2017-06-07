@@ -1,7 +1,137 @@
 #+TITLE: grorg
 
-A command line interface for navigate and querying org mode files
-(grep-org, or grorg). It's main advantage over org mode tools is it's
-understanding of the org mode syntax, which enables querying that
-might be difficult in shell scripts (such as listing all immediate
-children of a given header).
+grorg is grep for org-mode. It's chief advantage over tools like grep
+is it's understanding of org-mode's syntax. This means it can do
+things like search for all todo items with the tag "home" under the
+"Tasks" header. grorg is aware of the tree of your org-mode document
+and exposes the power of org-mode to the command line.
+
+* Getting Started
+** Prerequisites
+grorg requires python-3.6 and pip be installed, beyond that no other
+dependencies are required.
+** Installing
+After cloning the repository, run the pip installer as root to install
+to $PATH
+
+#+BEGIN_SRC shell
+  $ sudo pip install .
+#+END_SRC
+
+Test it out:
+
+#+BEGIN_SRC shell
+  $ grorg '/' some_org_document.org
+#+END_SRC
+
+It should print a list of every header in your document.
+* Usage
+
+#+BEGIN_QUOTE
+Usage: grorg [OPTIONS] ORG_SELECTOR ORG_FILE
+
+  grorg, grep for org-mode.
+
+  Search all headings selected by ORG_SELECTOR in the file ORG_FILE. Use the
+  --filter option to filter by specific properties or pipe to grep.
+
+Options:
+  --done-keywords TEXT  Add extra keywords that are recognized as done items.
+  --todo-keywords TEXT  Add extra keywords that are recognized as todo items.
+  --content BOOLEAN     Print the content of selected nodes (their text and
+                        children).
+  --filter FILTER       Filters to apply to selected nodes.
+  --help                Show this message and exit.
+#+END_QUOTE
+
+** Selector
+A selector is a path describing how grorg should traverse your org
+mode document. A '/' separates a path like a normal unix
+path. Selectors aren't exactly like paths though, they have a few
+extra features.
+
+#+BEGIN_EXAMPLE
+/Tasks
+#+END_EXAMPLE
+
+This is a basic selector. It's an /absolute path/. Absolute because it
+starts from the root of your document and goes down one heading at a
+time. In this case it selects the heading "Task" in the example
+document outline below.
+
+#+BEGIN_EXAMPLE
+- Tasks
+ - TODO Do a thing
+- Notes
+ - Sub note
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+//Sub note
+#+END_EXAMPLE
+
+This is a /relative/ selector. It's relative because it can start
+anywhere in your tree. So while "Sub note" is nested inside of the
+"Notes" header, the relative selector will still find it.
+
+#+BEGIN_EXAMPLE
+/(N|T).*
+#+END_EXAMPLE
+
+Selectors can have regular expressions. We've been using them all
+along, just without realizing it. In this case it starts from the
+root and descends into nodes matching the regex =(N|T).*=. You can
+combine this with relative selectors for even more power.
+** Filter
+
+Filters can be thought of as a secondary selector. They give you
+access to properties of an org mode header, and let you filter them.
+
+Filters are expressed with relationships. Relationships tell
+grorg how a property should look.
+
+The basic syntax for a relationship looks like this:
+
+#+BEGIN_EXAMPLE
+<property><relationship operator><value>
+#+END_EXAMPLE
+
+There are different types of relationships that can be represented
+with grorg. The relationship operator changes the type of relationship.
+
+- = :: The '=' operator denotes equality.
+- ~ :: The '~' operator matches the property with a regular
+       expression.
+- > :: '>' denotes that the property is greater than the value
+- < :: '<' denotes that the property is less than the value
+- & :: '&' denotes the the property (taken as a set) has an
+       intersection with the set constructed of the value.
+
+A value is either a string, int, or list (set). This value is enforced
+by the relationship. So any value passed to '>' or '<' is presumed to
+be an integer, while any value passed to '~' is assumed to be a
+string. A list is explicitly constructed by having multiple values
+split by ';'.
+
+Example values:
+
+#+BEGIN_EXAMPLE
+A simple string
+a;list;of;values
+#+END_EXAMPLE
+
+Putting this together we can construct some relationships for the
+headings we want to filter. If we want only headings with a todo
+status of 'TODO', we could do this by using the filter 'todo=TODO'. If
+we wanted all headings with either 'TODO' or 'DONE' we could use
+'todo&TODO;DONE'.
+
+Relationships are chained together with ',' and passed to the =--filter=
+argument.
+
+Example usage:
+
+#+BEGIN_SRC shell
+grorg '/Tasks' --filter 'todo=TODO'
+# Select all todo items under /Tasks that have a todo state of TODO
+#+END_SRC
