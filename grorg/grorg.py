@@ -7,6 +7,7 @@ KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|
 
 
 class FilterSetParamType(click.ParamType):
+    """ A click parameter type that constructs property filters. """
     name = 'filter'
 
     def convert(self, value, param, ctx):
