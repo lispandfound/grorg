@@ -1,5 +1,11 @@
 import re
 
+KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>[=><{~&])(?P<value>.*)?$')
+
+
+class RelationshipParseError(Exception):
+    pass
+
 
 def relationship_from(relationship_string):
     """ Build a relationship (an expression of some (dis)similarity
@@ -12,52 +18,61 @@ def relationship_from(relationship_string):
     - '&', membership (of lists or sets).
     All relationships can be inverted with a '!'
     """
-    invert_relationship = False
-    if relationship_string[0] == '!':
-        invert_relationship = True
-        relationship_string = relationship_string[1:]
 
-    relationship_operator = relationship_string[0]
-    relationship_rhs = relationship_string[1:].split(';')
-    relationship_rx = re.compile(relationship_rhs[0])
+    match = re.match(KEY_VALUE_RE, relationship_string)
+    if not match:
+        raise RelationshipParseError()
+    else:
+        relationship_property = match.group('property')
+        value = match.group('value')
+        invert = match.group('invert')
 
-    def gt_mapping(lhs):
-        return int(lhs) > int(relationship_rhs[0])
+        invert_relationship = False
+        if invert is not None:
+            invert_relationship = True
+            relationship_string = relationship_string[1:]
 
-    def lt_mapping(lhs):
-        return not gt_mapping(lhs)
+        relationship_operator = match.group('relationship')
+        relationship_rhs = value.split(';')
+        relationship_rx = re.compile(relationship_rhs[0])
 
-    def membership_mapping(lhs):
-        relationship_set = set(relationship_rhs)
-        if type(lhs) == list:
-            return set(lhs) & relationship_set
-        else:
-            return lhs in relationship_set
+        def gt_mapping(lhs):
+            return int(lhs) > int(relationship_rhs[0])
 
-    def equal_mapping(lhs):
-        return str(lhs) == relationship_rhs[0]
+        def lt_mapping(lhs):
+            return not gt_mapping(lhs)
 
-    def regex_mapping(lhs):
-        return relationship_rx.match(lhs) is not None
+        def membership_mapping(lhs):
+            relationship_set = set(relationship_rhs)
+            if type(lhs) == list:
+                return set(lhs) & relationship_set
+            else:
+                return lhs in relationship_set
 
-    relationship_mapping = {
-        '=': equal_mapping,
-        '>': gt_mapping,
-        '<': lt_mapping,
-        '&': membership_mapping,
-        '~': regex_mapping
-    }
+        def equal_mapping(lhs):
+            return str(lhs) == relationship_rhs[0]
 
-    mapping = relationship_mapping[relationship_operator]
+        def regex_mapping(lhs):
+            return relationship_rx.match(lhs) is not None
 
-    def apply_mapping(lhs):
-        relationship_holds = mapping(lhs)
-        if invert_relationship:
-            return not relationship_holds
-        else:
-            return relationship_holds
+        relationship_mapping = {
+            '=': equal_mapping,
+            '>': gt_mapping,
+            '<': lt_mapping,
+            '&': membership_mapping,
+            '~': regex_mapping
+        }
 
-    return apply_mapping
+        mapping = relationship_mapping[relationship_operator]
+
+        def apply_mapping(lhs):
+            relationship_holds = mapping(lhs)
+            if invert_relationship:
+                return not relationship_holds
+            else:
+                return relationship_holds
+
+        return relationship_property, apply_mapping
 
 
 class PropertyFilter:

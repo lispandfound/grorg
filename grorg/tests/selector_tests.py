@@ -1,4 +1,5 @@
 from PyOrgMode import PyOrgMode
+import os
 import re
 from grorg import selector
 import unittest
@@ -7,6 +8,7 @@ import unittest
 class TestSelector(unittest.TestCase):
     def setUp(self):
         self.org_file = PyOrgMode.OrgDataStructure()
+        print(os.getcwd())
         self.org_file.load_from_file('./tests/test.org')
 
     def test_parse_selector(self):

@@ -1,9 +1,6 @@
-import re
 from PyOrgMode import PyOrgMode
 import click
 from grorg import selector, property_filter
-
-KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|<|{|~|&)(?P<value>.*)?$')
 
 
 class FilterSetParamType(click.ParamType):
@@ -17,17 +14,12 @@ class FilterSetParamType(click.ParamType):
         prop_filter = property_filter.PropertyFilter()
         kv_pairs = value.split(',')
         for pair in kv_pairs:
-            relationship_matches = re.match(KEY_VALUE_RE, pair)
-            if not relationship_matches:
-                self.fail('{} is not a valid key value pair'.format(pair))
-            else:
-                filter_prop = relationship_matches.group('property')
-                value = relationship_matches.group('value')
-                relationship_op = relationship_matches.group('relationship')
-                invert = relationship_matches.group('invert') or ''
-                relationship_string = invert + relationship_op + value
-                relationship = property_filter.relationship_from(relationship_string)
+            try:
+                filter_prop, relationship = property_filter.relationship_from(pair)
                 prop_filter.add_filter(filter_prop, relationship)
+            except property_filter.RelationshipParseError:
+                self.fail('{} is not a valid key value pair'.format(pair))
+
         return prop_filter
 
 

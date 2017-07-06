@@ -30,12 +30,10 @@ class TestPropertyFilter(unittest.TestCase):
 
     def test_apply_filter(self):
         prop_filter = property_filter.PropertyFilter()
-        prop_filter.add_filter('name',
-                               property_filter.relationship_from('=Fido'))
+        prop_filter.add_filter(*property_filter.relationship_from('name=Fido'))
         # Test name = Fido filter
         self.assertTrue(prop_filter.apply_filter(self.test_data[0]))
-        prop_filter.add_filter('name',
-                               property_filter.relationship_from('=Bubbles'))
+        prop_filter.add_filter(*property_filter.relationship_from('name=Bubbles'))
         # Test name = Fido, name = Bubbles filter (multiple relationships)
         # Fido
         self.assertTrue(prop_filter.apply_filter(self.test_data[0]))
@@ -43,8 +41,7 @@ class TestPropertyFilter(unittest.TestCase):
         self.assertTrue(prop_filter.apply_filter(self.test_data[1]))
         # Test invalid property filter
         prop_filter.filter_dict.clear()
-        prop_filter.add_filter('height',
-                               property_filter.relationship_from('>3'))
+        prop_filter.add_filter(*property_filter.relationship_from('height>3'))
         self.assertFalse(prop_filter.apply_filter(self.test_data[0]))
 
 
@@ -53,19 +50,20 @@ class TestRelationships(unittest.TestCase):
     def test_relationships(self):
 
         test_cases = {
-            ('=Hello', 'Hello'): True,
-            ('>3', '4'): True,
-            ('!>3', '4'): False,
-            ('=.at', 'Cat'): True,
-            ('!{a;b;c;d', 'e'): True
+            ('a=Hello', 'Hello'): True,
+            ('a>3', '4'): True,
+            ('a!>3', '4'): False,
+            ('a~.at', 'Cat'): True,
+            ('a!&a;b;c;d', 'e'): True
         }
 
         for relationship_test, expected_result in test_cases.items():
             relationship_string, argument = relationship_test
-            relationship = property_filter.relationship_from(relationship_string)
+            prop, relationship = property_filter.relationship_from(relationship_string)
             value = relationship(argument)
             print(f'{relationship_string} held {value} when called with {argument}')
             self.assertEqual(value, expected_result)
+            self.assertEqual(prop, 'a')
 
         relationship = property_filter.relationship_from('{test')
         self.assertTrue(relationship(['test']))
