@@ -1,10 +1,33 @@
 import re
+from PyOrgMode import PyOrgMode
 
-KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>[=><{~&])(?P<value>.*)?$')
+
+def parse_value(value):
+    ''' Parse a string into a value depending on it's contents. '''
+    match_integer = re.compile('^\d+$')
+
+    if len(value) > 1:
+        # Short for list or set
+        return value
+    elif match_integer.match(value):
+        # Return true if value is an integer
+        return int(value)
+    try:
+        # Use PyOrgMode date parsing because it is more robust than anything I
+        # could come up with.
+        date = PyOrgMode.OrgDate(value=value)
+        return date.value
+    except Exception:
+        # Please forgive me for the sins I have committed.
+        pass
+    return value
 
 
 class RelationshipParseError(Exception):
     pass
+
+
+KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|<|{|~|&)(?P<value>.*)?$')
 
 
 def relationship_from(relationship_string):
@@ -33,11 +56,10 @@ def relationship_from(relationship_string):
             relationship_string = relationship_string[1:]
 
         relationship_operator = match.group('relationship')
-        relationship_rhs = value.split(';')
-        relationship_rx = re.compile(relationship_rhs[0])
+        relationship_rhs = parse_value(value.split(';'))
 
         def gt_mapping(lhs):
-            return int(lhs) > int(relationship_rhs[0])
+            return lhs > relationship_rhs
 
         def lt_mapping(lhs):
             return not gt_mapping(lhs)
@@ -50,10 +72,10 @@ def relationship_from(relationship_string):
                 return lhs in relationship_set
 
         def equal_mapping(lhs):
-            return str(lhs) == relationship_rhs[0]
+            return str(lhs) == relationship_rhs
 
         def regex_mapping(lhs):
-            return relationship_rx.match(lhs) is not None
+            return re.compile(value).match(lhs) is not None
 
         relationship_mapping = {
             '=': equal_mapping,
