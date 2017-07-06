@@ -65,5 +65,5 @@ class TestRelationships(unittest.TestCase):
             self.assertEqual(value, expected_result)
             self.assertEqual(prop, 'a')
 
-        relationship = property_filter.relationship_from('{test')
+        _, relationship = property_filter.relationship_from('a&test')
         self.assertTrue(relationship(['test']))

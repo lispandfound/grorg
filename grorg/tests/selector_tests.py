@@ -9,7 +9,7 @@ class TestSelector(unittest.TestCase):
     def setUp(self):
         self.org_file = PyOrgMode.OrgDataStructure()
         print(os.getcwd())
-        self.org_file.load_from_file('./tests/test.org')
+        self.org_file.load_from_file('./grorg/tests/test.org')
 
     def test_parse_selector(self):
         test_selector = {
