@@ -5,21 +5,16 @@ from PyOrgMode import PyOrgMode
 def parse_value(value):
     ''' Parse a string into a value depending on it's contents. '''
     match_integer = re.compile('^\d+$')
-
-    if len(value) > 1:
+    if type(value) == list:
         # Short for list or set
-        return value
-    elif match_integer.match(value):
+        return [parse_value(value) for value in value]
+    elif re.match(match_integer, value):
         # Return true if value is an integer
+        print(value)
         return int(value)
-    try:
-        # Use PyOrgMode date parsing because it is more robust than anything I
-        # could come up with.
-        date = PyOrgMode.OrgDate(value=value)
-        return date.value
-    except Exception:
-        # Please forgive me for the sins I have committed.
-        pass
+    org_date = PyOrgMode.OrgDate(value)
+    if org_date.value:
+        return org_date.value
     return value
 
 
@@ -27,7 +22,7 @@ class RelationshipParseError(Exception):
     pass
 
 
-KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>=|>|<|{|~|&)(?P<value>.*)?$')
+KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>[><~&=])(?P<value>.*)?$')
 
 
 def relationship_from(relationship_string):
@@ -56,7 +51,10 @@ def relationship_from(relationship_string):
             relationship_string = relationship_string[1:]
 
         relationship_operator = match.group('relationship')
-        relationship_rhs = parse_value(value.split(';'))
+        if ';' in value:
+            relationship_rhs = parse_value(value.split(';'))
+        else:
+            relationship_rhs = parse_value(value)
 
         def gt_mapping(lhs):
             return lhs > relationship_rhs

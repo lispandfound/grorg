@@ -1,4 +1,5 @@
 from grorg import property_filter
+import time
 import unittest
 
 
@@ -51,10 +52,11 @@ class TestRelationships(unittest.TestCase):
 
         test_cases = {
             ('a=Hello', 'Hello'): True,
-            ('a>3', '4'): True,
-            ('a!>3', '4'): False,
+            ('a>3', 4): True,
+            ('a!>3', 4): False,
             ('a~.at', 'Cat'): True,
-            ('a!&a;b;c;d', 'e'): True
+            ('a!&a;b;c;d', 'e'): True,
+            ('a><2017-07-06 Thu>', time.strptime("30 Jun 2017 22:59:60", "%d %b %Y %H:%M:%S")): False
         }
 
         for relationship_test, expected_result in test_cases.items():
@@ -65,5 +67,5 @@ class TestRelationships(unittest.TestCase):
             self.assertEqual(value, expected_result)
             self.assertEqual(prop, 'a')
 
-        _, relationship = property_filter.relationship_from('a&test')
+        _, relationship = property_filter.relationship_from('a&test;1;2;3')
         self.assertTrue(relationship(['test']))
