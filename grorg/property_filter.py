@@ -1,5 +1,12 @@
+import time
 import re
 from PyOrgMode import PyOrgMode
+
+
+def iso8601_date(string):
+    ''' Returns a valid time struct if string is a valid ISO-8601 formatted
+    timestring, raising ValueError otherwise. '''
+    return time.strptime(string, '%Y-%m-%d')
 
 
 def parse_value(value):
@@ -12,9 +19,11 @@ def parse_value(value):
         # Return true if value is an integer
         print(value)
         return int(value)
-    org_date = PyOrgMode.OrgDate(value)
-    if org_date.value:
-        return org_date.value
+    try:
+        return iso8601_date(value)
+    except ValueError:
+        pass
+
     return value
 
 
