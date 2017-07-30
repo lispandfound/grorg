@@ -56,7 +56,7 @@ def cli(org_file, org_selector='', filter=None, content=None,
         result = (node for node in result if filter.apply_filter(node))
 
     for node in result:
-        if content is None:
+        if not content:
             node.content = []
         click.echo(node.output().strip())
 
