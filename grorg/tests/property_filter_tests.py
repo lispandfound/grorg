@@ -56,7 +56,7 @@ class TestRelationships(unittest.TestCase):
             ('a!>3', 4): False,
             ('a~.at', 'Cat'): True,
             ('a!&a;b;c;d', 'e'): True,
-            ('a><2017-07-06 Thu>', time.strptime("30 Jun 2017 22:59:60", "%d %b %Y %H:%M:%S")): False
+            ('a>2017-07-06', property_filter.iso8601_date('2017-07-05')): False
         }
 
         for relationship_test, expected_result in test_cases.items():

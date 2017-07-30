@@ -26,7 +26,7 @@ class FilterSetParamType(click.ParamType):
 @click.argument('org_file', type=click.File('r'))
 @click.argument('org_selector')
 @click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.')
-@click.option('--content', type=bool, help='Print the content of selected nodes (their text and children).')
+@click.option('--content', is_flag=True)
 @click.option('--todo-keywords', help='Add extra keywords that are recognized as todo items.')
 @click.option('--done-keywords', help='Add extra keywords that are recognized as done items.')
 @click.command()
