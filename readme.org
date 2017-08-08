@@ -120,7 +120,7 @@ Relationship operators:
 - & :: '&' denotes the the property (taken as a set) has an
        intersection with the set constructed of the value.
 
-A value is either a string, int, or list (set). The value's type is enforced
+A value is either a string, int, list (set), or date. The value's type is enforced
 by the relationship. So any value passed to =>= or =<= is presumed to
 be an integer, while any value passed to =~= is assumed to be a
 string. A list is explicitly constructed by having multiple values
@@ -131,6 +131,8 @@ Example values:
 #+BEGIN_EXAMPLE
 A simple string
 a;list;of;values
+2017-02-01 # Dates are in the ISO8601 format
+3
 #+END_EXAMPLE
 
 Putting this together we can construct some relationships for the
@@ -148,3 +150,39 @@ Example usage:
 $ grorg '/Tasks' --filter 'todo=TODO'
 # Select all todo items under /Tasks that have a todo state of TODO
 #+END_SRC
+
+** Todo Keywords
+By default grorg only recognizes the basic todo keywords. These basic keywords
+are =TODO= and =DONE=. grorg provides extra flags if you need more than these two.
+The =--todo-keywords= flag will add one or more keywords recognized in the =TODO=
+state. The =--done-keywords= flag will add one or more keywords recognized in the
+=DONE= state. To add more than one keyword with either, separate the keywords with
+a comma.
+
+#+BEGIN_SRC shell
+  # Add extra todo keywords
+  $ grorg '/Tasks' --filter 'todo=WAITING' --todo-keywords='WAITING'
+  # Add extra done keywords
+  $ grorg '/Tasks' --filter 'todo=CANCELED' --done-keywords='CANCELED'
+#+END_SRC
+** Properties
+
+There are many properties your todo header might have. The library used to parse
+org documents, [[https://github.com/bjonnh/PyOrgMode][PyOrgMode]], doesn't really document these too well. Below is a
+list of the properties org headers can have, what values they take, and what
+conditions they are present in.
+
+All headers will have the following:
+
+- heading :: The actual text of the heading (string).
+- tags :: The tags the heading possess (list).
+- level :: The level of indent the heading is in (int).
+- todo :: The todo state this heading has, if any exists (string).
+- priority :: The priority of the heading. This is a single character, so /[#B]/
+              maps to "B". (string)
+
+
+Additionally todo items will have a few additional properties you can filter by.
+
+- deadline :: The deadline date of the todo item (date).
+- scheduled :: The scheduled date of the todo item (date).
