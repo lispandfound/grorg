@@ -17,7 +17,6 @@ def parse_value(value):
         return [parse_value(value) for value in value]
     elif re.match(match_integer, value):
         # Return true if value is an integer
-        print(value)
         return int(value)
     try:
         return iso8601_date(value)
