@@ -3,6 +3,18 @@ from PyOrgMode import PyOrgMode
 import re
 
 
+def drawer_from(header, name='PROPERTIES'):
+    ''' Get properties drawer from given org mode header. Performs a linear
+    search through the content for the drawer. '''
+
+    for child in header.content:
+        is_drawer = type(child) == PyOrgMode.OrgDrawer.Element
+        if is_drawer and child.name == name:
+            return child
+
+    return None
+
+
 def header(node):
     """ Returns True if given node is a header node. """
     return type(node) == PyOrgMode.OrgNode.Element
