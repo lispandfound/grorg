@@ -59,6 +59,7 @@ def cli(org_file, org_selector='', filter=None, content=None,
         if not content:
             node.content = []
         click.echo(node.output().strip())
+        click.echo('\n')
 
 
 cli()
