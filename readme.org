@@ -144,11 +144,22 @@ we wanted all headings with either =TODO= or =DONE= we could use
 Relationships are chained together with ',' and passed to the =--filter=
 argument.
 
+The ',' acts as an /AND/ expression. So if any relationship in the chain fails
+they all fail. If you need to express an /OR/ relationship (i.e tasks that have a
+level >2 OR tasks that have a specific heading) you should pass multiple
+=--filter= flags. These are iterated over individually and a header is added if
+any filters pass.
+
 Example usage:
 
 #+BEGIN_SRC shell
+# Select all todo items under /Tasks that have a todo state of TODO.
 $ grorg '/Tasks' --filter 'todo=TODO'
-# Select all todo items under /Tasks that have a todo state of TODO
+# Select all todo items under /Tasks that have a todo state of TODO,
+# and if the :CATEGORY: drawer in :PROPERTIES: is set to work.
+$ grorg '/Tasks' --filter 'todo=TODO,properties[category]=work'
+# Select all todo items under /Tasks that have a todo state of TODO, or have a :next: tag.
+$ grorg '/Tasks' --filter 'todo=TODO' --filter 'tags&next'
 #+END_SRC
 
 ** Todo Keywords
@@ -186,3 +197,13 @@ Additionally todo items will have a few additional properties you can filter by.
 
 - deadline :: The deadline date of the todo item (date).
 - scheduled :: The scheduled date of the todo item (date).
+
+Additionally you may also search the =PROPERTIES= drawer contained within the
+header. This is done by using the syntax =properties[property_field]=. Drawer
+properties are also recognized as values, so you can perform the usual tricks
+(comparing integers, set intersections, etc).
+
+#+BEGIN_SRC shell
+# selected all tasks where DAYS_COMPLETED is set >4
+$ grorg '/Tasks' --filter 'properties[days_completed]>4'
+#+END_SRC

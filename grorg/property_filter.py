@@ -1,6 +1,5 @@
 import time
 import re
-from PyOrgMode import PyOrgMode
 
 
 def iso8601_date(string):
@@ -30,7 +29,7 @@ class RelationshipParseError(Exception):
     pass
 
 
-KEY_VALUE_RE = re.compile('^(?P<property>\w+)(?P<invert>!)?(?P<relationship>[><~&=])(?P<value>.*)?$')
+KEY_VALUE_RE = re.compile('^(?P<property>[\w\[\]\.]+)(?P<invert>!)?(?P<relationship>[><~&=])(?P<value>.*)?$')
 
 
 def relationship_from(relationship_string):
@@ -110,6 +109,7 @@ class PropertyFilter:
     def __init__(self, initial_filter_dict=None):
         """ Initialization of filter class. """
         self.filter_dict = initial_filter_dict or {}
+        self.hooks = []
 
     def add_filter(self, filter_property, filter_value):
         """ Add another filter property to the filter object. """
@@ -117,16 +117,44 @@ class PropertyFilter:
         current_value.append(filter_value)
         self.filter_dict[filter_property] = current_value
 
+    def add_hook(self, hook_rx, hook_func):
+        ''' Add a hook to the property filter. A hook allows an arbitrary
+        function to run on the object being filtered. Hooks are used to allow
+        access to the property drawer in the CLI for instance. '''
+        self.hooks.append((hook_rx, hook_func))
+
+    def get_hook(self, filter_property):
+        ''' Retrieve a hook given a filter property. This is done by applying
+        regex to the filter property till either one, or none match. '''
+        if filter_property is None:
+            return None
+        for hook_rx, func in self.hooks:
+            match = re.match(hook_rx, filter_property)
+            if match:
+                return match, func
+
+        return None
+
     def apply_filter(self, source):
         """ Apply a filter to a given object (source). Returns True if
         all properties of the filter match the given object. """
         for filter_property, relationships in self.filter_dict.items():
-            if not hasattr(source, filter_property):
+            match, hook_func = self.get_hook(filter_property) or (None, None)
+            if match is not None:
+                lhs_property = hook_func(match, source)
+            elif not hasattr(source, filter_property):
                 return False
-            lhs_property = getattr(source, filter_property)
+            else:
+                lhs_property = getattr(source, filter_property)
             relationships_hold = any(relationship(lhs_property)
                                      for relationship in relationships)
             if not relationships_hold:
                 return False
 
         return True
+
+
+def apply_filters(filters, source):
+    ''' Apply multiple filters to one source, return true if any of these
+    filters are true. '''
+    return any(f.apply_filter(source) for f in filters)

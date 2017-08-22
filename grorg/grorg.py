@@ -3,6 +3,26 @@ import click
 from grorg import selector, property_filter
 
 
+PROPERTY_DRAWER_RX = r'property\[(?P<property_name>\w+)\]'
+
+
+def property_drawer_filter(rx_match, header):
+    ''' Match find a specific property from the PROPERTIES drawer in an org
+    mode header. '''
+    property_name = rx_match.group('property_name').upper()
+    property_drawer = selector.drawer_from(header)
+
+    if not property_drawer:
+        return None
+
+    for drawer_property in property_drawer.content:
+        if drawer_property.name == property_name:
+            value = drawer_property.value
+            return property_filter.parse_value(value)
+
+    return None
+
+
 class FilterSetParamType(click.ParamType):
     """ A click parameter type that constructs property filters. """
     name = 'filter'
@@ -12,6 +32,7 @@ class FilterSetParamType(click.ParamType):
         containing key value pairs separated with commas). """
 
         prop_filter = property_filter.PropertyFilter()
+        prop_filter.add_hook(PROPERTY_DRAWER_RX, property_drawer_filter)
         kv_pairs = value.split(',')
         for pair in kv_pairs:
             try:
@@ -25,7 +46,7 @@ class FilterSetParamType(click.ParamType):
 
 @click.argument('org_file', type=click.File('r'))
 @click.argument('org_selector')
-@click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.')
+@click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.', multiple=True)
 @click.option('--content', is_flag=True)
 @click.option('--todo-keywords', help='Add extra keywords that are recognized as todo items.')
 @click.option('--done-keywords', help='Add extra keywords that are recognized as done items.')
@@ -36,6 +57,7 @@ def cli(org_file, org_selector='', filter=None, content=None,
     Search all headings selected by ORG_SELECTOR in the file
     ORG_FILE. Use the --filter option to filter by specific properties
     or pipe to grep. """
+    filters = filter
 
     org_document = PyOrgMode.OrgDataStructure()
 
@@ -52,8 +74,9 @@ def cli(org_file, org_selector='', filter=None, content=None,
     org_document.load_from_string(document)
     nodes = selector.apply_selector(org_selector, org_document)
     result = selector.expand(nodes, recursive=True)
-    if filter is not None:
-        result = (node for node in result if filter.apply_filter(node))
+    if filters is not None:
+        result = (node for node in result
+                  if property_filter.apply_filters(filters, node))
 
     for node in result:
         if not content:
