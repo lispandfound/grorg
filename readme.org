@@ -144,6 +144,12 @@ we wanted all headings with either =TODO= or =DONE= we could use
 Relationships are chained together with ',' and passed to the =--filter=
 argument.
 
+The ',' acts as an /AND/ expression. So if any relationship in the chain fails
+they all fail. If you need to express an /OR/ relationship (i.e tasks that have a
+level >2 OR tasks that have a specific heading) you should pass multiple
+=--filter= flags. These are iterated over individually and a header is added if
+any filters pass.
+
 Example usage:
 
 #+BEGIN_SRC shell
@@ -152,6 +158,8 @@ $ grorg '/Tasks' --filter 'todo=TODO'
 # Select all todo items under /Tasks that have a todo state of TODO,
 # and if the :CATEGORY: drawer in :PROPERTIES: is set to work.
 $ grorg '/Tasks' --filter 'todo=TODO,properties[category]=work'
+# Select all todo items under /Tasks that have a todo state of TODO, or have a :next: tag.
+$ grorg '/Tasks' --filter 'todo=TODO' --filter 'tags&next'
 #+END_SRC
 
 ** Todo Keywords
