@@ -3,6 +3,26 @@ import click
 from grorg import selector, property_filter
 
 
+PROPERTY_DRAWER_RX = r'property\[(?P<property_name>\w+)\]'
+
+
+def property_drawer_filter(rx_match, header):
+    ''' Match find a specific property from the PROPERTIES drawer in an org
+    mode header. '''
+    property_name = rx_match.group('property_name').upper()
+    property_drawer = selector.drawer_from(header)
+
+    if not property_drawer:
+        return None
+
+    for drawer_property in property_drawer.content:
+        if drawer_property.name == property_name:
+            value = drawer_property.value
+            return property_filter.parse_value(value)
+
+    return None
+
+
 class FilterSetParamType(click.ParamType):
     """ A click parameter type that constructs property filters. """
     name = 'filter'
@@ -12,6 +32,7 @@ class FilterSetParamType(click.ParamType):
         containing key value pairs separated with commas). """
 
         prop_filter = property_filter.PropertyFilter()
+        prop_filter.add_hook(PROPERTY_DRAWER_RX, property_drawer_filter)
         kv_pairs = value.split(',')
         for pair in kv_pairs:
             try:
