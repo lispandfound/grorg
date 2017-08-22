@@ -25,7 +25,7 @@ class FilterSetParamType(click.ParamType):
 
 @click.argument('org_file', type=click.File('r'))
 @click.argument('org_selector')
-@click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.')
+@click.option('--filter', type=FilterSetParamType(), help='Filters to apply to selected nodes.', multiple=True)
 @click.option('--content', is_flag=True)
 @click.option('--todo-keywords', help='Add extra keywords that are recognized as todo items.')
 @click.option('--done-keywords', help='Add extra keywords that are recognized as done items.')
@@ -36,6 +36,7 @@ def cli(org_file, org_selector='', filter=None, content=None,
     Search all headings selected by ORG_SELECTOR in the file
     ORG_FILE. Use the --filter option to filter by specific properties
     or pipe to grep. """
+    filters = filter
 
     org_document = PyOrgMode.OrgDataStructure()
 
@@ -52,8 +53,9 @@ def cli(org_file, org_selector='', filter=None, content=None,
     org_document.load_from_string(document)
     nodes = selector.apply_selector(org_selector, org_document)
     result = selector.expand(nodes, recursive=True)
-    if filter is not None:
-        result = (node for node in result if filter.apply_filter(node))
+    if filters is not None:
+        result = (node for node in result
+                  if property_filter.apply_filters(filters, node))
 
     for node in result:
         if not content:

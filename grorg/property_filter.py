@@ -130,3 +130,9 @@ class PropertyFilter:
                 return False
 
         return True
+
+
+def apply_filters(filters, source):
+    ''' Apply multiple filters to one source, return true if any of these
+    filters are true. '''
+    return any(f.apply_filter(source) for f in filters)
